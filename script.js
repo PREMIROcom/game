@@ -1,53 +1,74 @@
 const database = {
     players: [
-        // --- SAUDI PRO LEAGUE (SAUDI ARABIA) ---
-        { name: "Cristiano Ronaldo", clubs: ["Al Nassr", "Man United", "Real Madrid", "Juventus", "Sporting CP"] },
+        // --- SAUDI PRO LEAGUE & MIDDLE EAST ---
+        { name: "Cristiano Ronaldo", clubs: ["Al Nassr", "Manchester United", "Real Madrid", "Juventus", "Sporting CP"] },
         { name: "Neymar Jr", clubs: ["Al Hilal", "PSG", "Barcelona", "Santos"] },
         { name: "Karim Benzema", clubs: ["Al Ittihad", "Real Madrid", "Lyon"] },
         { name: "Sadio Mane", clubs: ["Al Nassr", "Bayern Munich", "Liverpool", "Southampton", "Red Bull Salzburg", "Metz"] },
-        { name: "Riyad Mahrez", clubs: ["Al Ahli", "Manchester City", "Leicester City", "Le Havre"] },
+        { name: "Riyad Mahrez", clubs: ["Al Ahli", "Manchester City", "Leicester City", "Le Havre", "Quimper"] },
         { name: "N'Golo Kante", clubs: ["Al Ittihad", "Chelsea", "Leicester City", "Caen", "Boulogne"] },
+        { name: "Ivan Rakitic", clubs: ["Al Shabab", "Sevilla", "Barcelona", "Schalke 04", "Basel"] },
+        { name: "Ruben Neves", clubs: ["Al Hilal", "Wolves", "Porto"] },
 
-        // --- MLS (USA) ---
+        // --- MLS & NORTH AMERICA ---
         { name: "Lionel Messi", clubs: ["Inter Miami", "Barcelona", "PSG"] },
-        { name: "Luis Suarez", clubs: ["Inter Miami", "Gremio", "Nacional", "Atletico Madrid", "Barcelona", "Liverpool", "Ajax"] },
+        { name: "Luis Suarez", clubs: ["Inter Miami", "Gremio", "Nacional", "Atletico Madrid", "Barcelona", "Liverpool", "Ajax", "Groningen"] },
         { name: "Sergio Busquets", clubs: ["Inter Miami", "Barcelona"] },
         { name: "Jordi Alba", clubs: ["Inter Miami", "Barcelona", "Valencia", "Gimnastic"] },
-        { name: "Olivier Giroud", clubs: ["LAFC", "AC Milan", "Chelsea", "Arsenal", "Montpellier", "Tours", "Grenoble"] },
+        { name: "Olivier Giroud", clubs: ["LAFC", "AC Milan", "Chelsea", "Arsenal", "Montpellier", "Tours", "Istres", "Grenoble"] },
         { name: "Emil Forsberg", clubs: ["NY Red Bulls", "RB Leipzig", "Malmo", "Sundsvall"] },
+        { name: "Hugo Lloris", clubs: ["LAFC", "Tottenham", "Lyon", "Nice"] },
+        { name: "Marco Reus", clubs: ["LA Galaxy", "Borussia Dortmund", "Monchengladbach", "Rot Weiss Ahlen"] },
 
         // --- ISL (INDIA) ---
-        { name: "Sunil Chhetri", clubs: ["Bengaluru FC", "Mumbai City", "Sporting CP B", "Kansas City Wizards", "Mohun Bagan", "East Bengal"] },
-        { name: "Jason Cummings", clubs: ["Mohun Bagan", "Central Coast Mariners", "Dundee", "Shrewsbury Town", "Nottingham Forest", "Hibernian"] },
-        { name: "Adrian Luna", clubs: ["Kerala Blasters", "Melbourne City", "Veracruz", "Espanyol", "Defensor Sporting"] },
+        { name: "Sunil Chhetri", clubs: ["Bengaluru FC", "Mumbai City", "Sporting CP B", "Kansas City Wizards", "Mohun Bagan", "East Bengal", "JCT"] },
+        { name: "Jason Cummings", clubs: ["Mohun Bagan", "Central Coast Mariners", "Dundee", "Shrewsbury Town", "Peterborough United", "Luton Town", "Nottingham Forest", "Hibernian"] },
+        { name: "Adrian Luna", clubs: ["Kerala Blasters", "Melbourne City", "Veracruz", "Espanyol", "Gimnastic", "Sabadell", "Defensor Sporting"] },
         { name: "Roy Krishna", clubs: ["Odisha FC", "Bengaluru FC", "ATK Mohun Bagan", "Wellington Phoenix", "Waitakere United"] },
+        { name: "Dimitrios Diamantakos", clubs: ["East Bengal", "Kerala Blasters", "Hajduk Split", "St. Pauli", "Bochum", "Karlsruher", "Olympiacos"] },
 
         // --- K-LEAGUE (SOUTH KOREA) ---
-        { name: "Jesse Lingard", clubs: ["FC Seoul", "Nottingham Forest", "West Ham", "Man United", "Leicester City", "Derby County", "Brighton"] },
-        { name: "Cho Gue-sung", clubs: ["Midtjylland", "Jeonbuk Hyundai", "Anyang"] },
-        { name: "Lee Seung-woo", clubs: ["Suwon FC", "Sint-Truiden", "Hellas Verona", "Barcelona B"] },
+        { name: "Jesse Lingard", clubs: ["FC Seoul", "Nottingham Forest", "West Ham", "Manchester United", "Leicester City", "Derby County", "Brighton", "Birmingham City"] },
+        { name: "Cho Gue-sung", clubs: ["Midtjylland", "Jeonbuk Hyundai", "Anyang", "Gimcheon Sangmu"] },
+        { name: "Lee Seung-woo", clubs: ["Jeonbuk Hyundai", "Suwon FC", "Sint-Truiden", "Portimonense", "Hellas Verona", "Barcelona B"] },
+        { name: "Seol Young-woo", clubs: ["Ulsan HD", "Crvena Zvezda"] },
 
-        // --- LIGA PORTUGAL (PORTUGAL) ---
-        { name: "Angel Di Maria", clubs: ["Benfica", "Juventus", "PSG", "Man United", "Real Madrid", "Rosario Central"] },
+        // --- LIGA PORTUGAL & EREDIVISIE ---
+        { name: "Angel Di Maria", clubs: ["Benfica", "Juventus", "PSG", "Manchester United", "Real Madrid", "Rosario Central"] },
         { name: "Viktor Gyokeres", clubs: ["Sporting CP", "Coventry City", "Swansea City", "St Pauli", "Brighton", "Brommapojkarna"] },
-        { name: "Nicolas Otamendi", clubs: ["Benfica", "Manchester City", "Valencia", "Porto", "Velez Sarsfield"] },
+        { name: "Nicolas Otamendi", clubs: ["Benfica", "Manchester City", "Valencia", "Porto", "Atletico Mineiro", "Velez Sarsfield"] },
         { name: "Pepe", clubs: ["Porto", "Besiktas", "Real Madrid", "Maritimo"] },
+        { name: "Jordan Henderson", clubs: ["Ajax", "Al Ettifaq", "Liverpool", "Sunderland", "Coventry City"] },
 
-        // --- RETIRED & UNKNOWN / JOURNEYMEN (THE "LINKS") ---
-        { name: "Zlatan Ibrahimovic", clubs: ["AC Milan", "PSG", "Man United", "LA Galaxy", "Barcelona", "Inter Milan", "Juventus", "Ajax", "Malmo"] },
-        { name: "David Beckham", clubs: ["Man United", "Real Madrid", "LA Galaxy", "AC Milan", "PSG", "Preston North End"] },
-        { name: "Ronaldinho", clubs: ["Barcelona", "PSG", "AC Milan", "Flamengo", "Atletico Mineiro", "Queretaro", "Gremio"] },
-        { name: "Samuel Eto'o", clubs: ["Barcelona", "Inter Milan", "Chelsea", "Everton", "Sampdoria", "Antalyaspor", "Konyaspor", "Qatar SC", "Anzhi", "Mallorca", "Real Madrid"] },
-        { name: "Nicolas Anelka", clubs: ["PSG", "Arsenal", "Real Madrid", "Liverpool", "Man City", "Fenerbahce", "Bolton", "Chelsea", "Shanghai Shenhua", "Juventus", "West Brom", "Mumbai City"] },
-        { name: "Asamoah Gyan", clubs: ["Udinese", "Rennes", "Sunderland", "Al Ain", "Shanghai SIPG", "Kayserispor", "NorthEast United", "Legon Cities"] },
+        // --- BIG 5 EUROPE (PL, LA LIGA, BUNDES, SERIE A, L1) ---
+        { name: "Kylian Mbappe", clubs: ["Real Madrid", "PSG", "Monaco"] },
+        { name: "Erling Haaland", clubs: ["Manchester City", "Borussia Dortmund", "Red Bull Salzburg", "Molde", "Bryne"] },
+        { name: "Harry Kane", clubs: ["Bayern Munich", "Tottenham", "Leicester City", "Norwich City", "Millwall", "Leyton Orient"] },
+        { name: "Jude Bellingham", clubs: ["Real Madrid", "Borussia Dortmund", "Birmingham City"] },
+        { name: "Kevin De Bruyne", clubs: ["Manchester City", "Wolfsburg", "Chelsea", "Werder Bremen", "Genk"] },
+        { name: "Robert Lewandowski", clubs: ["Barcelona", "Bayern Munich", "Borussia Dortmund", "Lech Poznan", "Znicz Pruszkow"] },
+        { name: "Antoine Griezmann", clubs: ["Atletico Madrid", "Barcelona", "Real Sociedad"] },
+        { name: "Lautaro Martinez", clubs: ["Inter Milan", "Racing Club"] },
+        { name: "Rafael Leao", clubs: ["AC Milan", "Lille", "Sporting CP"] },
+        { name: "Khvicha Kvaratskhelia", clubs: ["Napoli", "Dinamo Batumi", "Rubin Kazan", "Rustavi", "Lokomotiv Moscow"] },
 
-        // --- THE "ONE CLUB" PRESSURE PLAYERS ---
+        // --- THE "BRIDGE" JOURNEYMEN (PLAYED EVERYWHERE) ---
+        { name: "Zlatan Ibrahimovic", clubs: ["AC Milan", "PSG", "Manchester United", "LA Galaxy", "Barcelona", "Inter Milan", "Juventus", "Ajax", "Malmo"] },
+        { name: "David Beckham", clubs: ["Manchester United", "Real Madrid", "LA Galaxy", "AC Milan", "PSG", "Preston North End"] },
+        { name: "Nicolas Anelka", clubs: ["Mumbai City", "West Brom", "Juventus", "Shanghai Shenhua", "Chelsea", "Bolton", "Fenerbahce", "Manchester City", "Liverpool", "PSG", "Real Madrid", "Arsenal"] },
+        { name: "Samuel Eto'o", clubs: ["Qatar SC", "Konyaspor", "Antalyaspor", "Sampdoria", "Everton", "Chelsea", "Anzhi Makhachkala", "Inter Milan", "Barcelona", "Mallorca", "Real Madrid", "Leganes"] },
+        { name: "Asamoah Gyan", clubs: ["NorthEast United", "Kayserispor", "Al Ahli Dubai", "Shanghai SIPG", "Al Ain", "Sunderland", "Rennes", "Udinese", "Modena"] },
+        { name: "Mario Balotelli", clubs: ["Genoa", "Adana Demirspor", "Sion", "Monza", "Brescia", "Marseille", "Nice", "Milan", "Liverpool", "Manchester City", "Inter Milan", "Lumezzane"] },
+
+        // --- THE "ONE CLUB PLAYER" TRAPS ---
         { name: "Bukayo Saka", clubs: ["Arsenal"] },
         { name: "Phil Foden", clubs: ["Manchester City"] },
         { name: "Lamine Yamal", clubs: ["Barcelona"] },
         { name: "Thomas Muller", clubs: ["Bayern Munich"] },
-        { name: "Iker Muniain", clubs: ["Athletic Bilbao"] },
-        { name: "Koke", clubs: ["Atletico Madrid"] }
+        { name: "Iker Muniain", clubs: ["Athletic Bilbao", "San Lorenzo"] },
+        { name: "Koke", clubs: ["Atletico Madrid"] },
+        { name: "Florian Wirtz", clubs: ["Bayer Leverkusen"] },
+        { name: "Nico Williams", clubs: ["Athletic Bilbao"] }
     ]
 };
 const game = {
@@ -298,6 +319,7 @@ window.onload = () => {
     });
 
 };
+
 
 
 

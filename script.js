@@ -5,23 +5,22 @@ const database = {
         { name: "Diego Maradona", clubs: ["Argentinos Juniors", "Boca Juniors", "Barcelona", "Napoli", "Sevilla", "Newell's Old Boys"] },
         { name: "Johan Cruyff", clubs: ["Ajax", "Barcelona", "Los Angeles Aztecs", "Washington Diplomats", "Levante", "Feyenoord"] },
         { name: "Zinedine Zidane", clubs: ["Cannes", "Bordeaux", "Juventus", "Real Madrid"] },
-        
-        // --- CORRECTED: RONALDO NAZARIO (R9) ---
         { name: "Ronaldo Nazario", clubs: ["Cruzeiro", "PSV Eindhoven", "Barcelona", "Inter Milan", "Real Madrid", "AC Milan", "Corinthians"] },
-        
         { name: "Ronaldinho", clubs: ["Gremio", "PSG", "Barcelona", "AC Milan", "Flamengo", "Atletico Mineiro", "Queretaro", "Fluminense"] },
         { name: "Kaka", clubs: ["Sao Paulo", "AC Milan", "Real Madrid", "Orlando City"] },
         { name: "Thierry Henry", clubs: ["Monaco", "Juventus", "Arsenal", "Barcelona", "New York Red Bulls"] },
         { name: "David Beckham", clubs: ["Manchester United", "Preston North End", "Real Madrid", "LA Galaxy", "AC Milan", "PSG"] },
         { name: "Zlatan Ibrahimovic", clubs: ["Malmo", "Ajax", "Juventus", "Inter Milan", "Barcelona", "AC Milan", "PSG", "Manchester United", "LA Galaxy"] },
+        { name: "Gareth Bale", clubs: ["Southampton", "Tottenham", "Real Madrid", "LAFC"] },
 
-        // --- SAUDI PRO LEAGUE (SAUDI ARABIA) ---
+        // --- SAUDI PRO LEAGUE ---
         { name: "Cristiano Ronaldo", clubs: ["Sporting CP", "Manchester United", "Real Madrid", "Juventus", "Al Nassr"] },
         { name: "Neymar Jr", clubs: ["Santos", "Barcelona", "PSG", "Al Hilal"] },
         { name: "Karim Benzema", clubs: ["Lyon", "Real Madrid", "Al Ittihad"] },
         { name: "Sadio Mane", clubs: ["Metz", "Red Bull Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"] },
         { name: "N'Golo Kante", clubs: ["Boulogne", "Caen", "Leicester City", "Chelsea", "Al Ittihad"] },
         { name: "Riyad Mahrez", clubs: ["Le Havre", "Leicester City", "Manchester City", "Al Ahli"] },
+        { name: "Ivan Rakitic", clubs: ["Basel", "Schalke 04", "Sevilla", "Barcelona", "Al Shabab"] },
 
         // --- MLS (USA) ---
         { name: "Lionel Messi", clubs: ["Barcelona", "PSG", "Inter Miami"] },
@@ -29,30 +28,33 @@ const database = {
         { name: "Sergio Busquets", clubs: ["Barcelona", "Inter Miami"] },
         { name: "Jordi Alba", clubs: ["Valencia", "Gimnastic", "Barcelona", "Inter Miami"] },
         { name: "Olivier Giroud", clubs: ["Grenoble", "Istres", "Tours", "Montpellier", "Arsenal", "Chelsea", "AC Milan", "LAFC"] },
+        { name: "Marco Reus", clubs: ["Rot Weiss Ahlen", "Monchengladbach", "Borussia Dortmund", "LA Galaxy"] },
 
         // --- ISL (INDIA) ---
         { name: "Sunil Chhetri", clubs: ["Mohun Bagan", "JCT", "East Bengal", "Kansas City Wizards", "Sporting CP B", "Bengaluru FC", "Mumbai City"] },
-        { name: "Jason Cummings", clubs: ["Hibernian", "Nottingham Forest", "Shrewsbury Town", "Dundee", "Central Coast Mariners", "Mohun Bagan"] },
-        { name: "Nicolas Anelka", clubs: ["PSG", "Arsenal", "Real Madrid", "Liverpool", "Manchester City", "Fenerbahce", "Bolton", "Chelsea", "Juventus", "Mumbai City"] },
+        { name: "Jason Cummings", clubs: ["Hibernian", "Nottingham Forest", "Luton Town", "Peterborough United", "Shrewsbury Town", "Dundee", "Central Coast Mariners", "Mohun Bagan"] },
+        { name: "Nicolas Anelka", clubs: ["PSG", "Arsenal", "Real Madrid", "Liverpool", "Manchester City", "Fenerbahce", "Bolton", "Chelsea", "Juventus", "Shanghai Shenhua", "West Brom", "Mumbai City"] },
+        { name: "Adrian Luna", clubs: ["Defensor Sporting", "Espanyol", "Gimnastic", "Sabadell", "Veracruz", "Venados", "Melbourne City", "Kerala Blasters"] },
 
         // --- K-LEAGUE (SOUTH KOREA) ---
         { name: "Jesse Lingard", clubs: ["Manchester United", "Leicester City", "Birmingham City", "Brighton", "Derby County", "West Ham", "Nottingham Forest", "FC Seoul"] },
         { name: "Son Heung-min", clubs: ["Hamburg", "Bayer Leverkusen", "Tottenham"] },
-        { name: "Kim Min-jae", clubs: ["Jeonbuk Hyundai", "Beijing Guoan", "Fenerbahce", "Napoli", "Bayern Munich"] },
+        { name: "Kim Min-jae", clubs: ["Gyeongju KHNP", "Jeonbuk Hyundai", "Beijing Guoan", "Fenerbahce", "Napoli", "Bayern Munich"] },
 
         // --- CURRENT SUPERSTARS ---
         { name: "Kylian Mbappe", clubs: ["Monaco", "PSG", "Real Madrid"] },
         { name: "Erling Haaland", clubs: ["Bryne", "Molde", "Red Bull Salzburg", "Borussia Dortmund", "Manchester City"] },
         { name: "Harry Kane", clubs: ["Leyton Orient", "Millwall", "Norwich City", "Leicester City", "Tottenham", "Bayern Munich"] },
         { name: "Jude Bellingham", clubs: ["Birmingham City", "Borussia Dortmund", "Real Madrid"] },
-        { name: "Robert Lewandowski", clubs: ["Lech Poznan", "Borussia Dortmund", "Bayern Munich", "Barcelona"] },
+        { name: "Robert Lewandowski", clubs: ["Znicz Pruszkow", "Lech Poznan", "Borussia Dortmund", "Bayern Munich", "Barcelona"] },
 
         // --- ONE CLUB PLAYER TRAPS ---
         { name: "Bukayo Saka", clubs: ["Arsenal"] },
         { name: "Phil Foden", clubs: ["Manchester City"] },
         { name: "Lamine Yamal", clubs: ["Barcelona"] },
         { name: "Thomas Muller", clubs: ["Bayern Munich"] },
-        { name: "Francesco Totti", clubs: ["Roma"] }
+        { name: "Francesco Totti", clubs: ["Roma"] },
+        { name: "Florian Wirtz", clubs: ["Bayer Leverkusen"] }
     ]
 };
 
@@ -131,7 +133,6 @@ const game = {
         input.value = "";
     },
 
-    // --- THE NEW LOGIC FOR BUKAYO SAKA / LAMINE YAMAL ---
     handleOneClub() {
         if (!this.isMyTurn) return;
         const targetClean = this.simplify(this.target);
@@ -140,16 +141,14 @@ const game = {
         if (pMatch && pMatch.clubs.length === 1) {
             const onlyClub = pMatch.clubs[0];
             ui.addLog(this.players[this.turnIndex], `STAYING ON ${onlyClub.toUpperCase()}!`, "#f5c518");
-            
             this.target = onlyClub;
             this.lastUsed = this.simplify(onlyClub);
             this.turnIndex = (this.turnIndex + 1) % this.players.length;
-            
             if (this.mode === 'online') online.sendData({ type: 'MOVE', user: online.myName, move: this.target });
             this.updateTurnUI();
             this.resetTimer();
         } else {
-            alert("This player has multiple clubs in our database!");
+            alert("This player has other clubs in the database!");
         }
     },
 
@@ -169,7 +168,6 @@ const game = {
         const unlucky = this.players[index];
         ui.addLog("OUT", `${unlucky} ELIMINATED (${reason})`, "#ff4d4d");
         this.players.splice(index, 1);
-
         if (this.players.length <= 1) {
             const winner = this.players[0] || "GAME OVER";
             this.showVictory(`${winner} WINS!`);
@@ -188,7 +186,6 @@ const game = {
         const pObj = database.players.find(p => this.simplify(p.name) === targetClean);
         if (pObj) { options = pObj.clubs; } 
         else { options = database.players.filter(p => p.clubs.some(c => this.simplify(c) === targetClean)).map(p => p.name); }
-        
         const final = options.filter(o => !this.usedItems.includes(this.simplify(o)) && this.simplify(o) !== this.lastUsed);
         if (final.length > 0) { this.processMove("AI", final[Math.floor(Math.random() * final.length)]); } 
         else { this.eliminatePlayer(1, "AI STUCK"); }
@@ -197,7 +194,6 @@ const game = {
     showVictory(msg) {
         clearInterval(this.timer);
         document.getElementById('winner-name').innerText = msg;
-        document.getElementById('vic-msg').innerText = `CHAIN: ${this.usedItems.length}`;
         document.getElementById('victory-screen').style.display = 'flex';
     },
 
@@ -216,7 +212,7 @@ const game = {
         const inputs = document.querySelectorAll('.party-name');
         this.players = [];
         inputs.forEach(input => { if (input.value.trim()) this.players.push(input.value.trim()); });
-        if (this.players.length < 2) return alert("Add players!");
+        if (this.players.length < 2) return alert("Add at least 2 players!");
         this.mode = 'party';
         this.initGameState();
     },
@@ -239,23 +235,26 @@ const online = {
         this.isHost = true;
         game.players = [this.myName];
         this.peer.on('open', id => {
-            document.getElementById('room-display').innerText = "ID: " + id;
+            document.getElementById('room-display').innerText = "ROOM ID: " + id;
             document.getElementById('start-online-btn').style.display = "block";
-            document.getElementById('start-local-btn').style.display = "none";
         });
         this.peer.on('connection', c => { this.connections.push(c); this.setupConn(c); });
     },
     joinRoom() {
-        const id = document.getElementById('join-id').value;
+        const id = document.getElementById('join-id').value.trim();
+        if (!id) return alert("Enter Room ID!");
         this.myName = document.querySelector('.party-name').value || "Player" + Math.floor(Math.random()*99);
         this.peer = new Peer();
-        this.peer.on('open', () => { this.conn = this.peer.connect(id); this.setupConn(this.conn); });
+        this.peer.on('open', () => {
+            this.conn = this.peer.connect(id);
+            this.setupConn(this.conn);
+        });
     },
     setupConn(c) {
         c.on('open', () => { if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName }); });
         c.on('data', data => {
             if (data.type === 'HELLO' && this.isHost) {
-                game.players.push(data.name);
+                if (!game.players.includes(data.name)) game.players.push(data.name);
                 this.broadcast({ type: 'LIST', list: game.players });
                 ui.updateOnlineList();
             }
@@ -302,11 +301,4 @@ window.onload = () => {
     [...new Set(opts)].sort().forEach(o => {
         const el = document.createElement('option'); el.value = o; list.appendChild(el);
     });
-
 };
-
-
-
-
-
-

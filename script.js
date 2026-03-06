@@ -49,7 +49,6 @@ const database = {
         { name: "Achraf Hakimi", clubs: ["PSG", "Inter Milan", "Borussia Dortmund", "Real Madrid"] }
     ]
 };
-
 const game = {
     mode: 'local',
     target: "Cristiano Ronaldo",
@@ -298,4 +297,5 @@ window.onload = () => {
     });
 
 };
+
 

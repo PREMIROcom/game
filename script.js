@@ -1,12 +1,17 @@
 const database = {
     players: [
+        // LEGENDS
         { name: "Cristiano Ronaldo", clubs: ["Real Madrid", "Man United", "Juventus", "Al Nassr", "Sporting CP"] },
         { name: "Lionel Messi", clubs: ["Barcelona", "PSG", "Inter Miami"] },
-        { name: "Wayne Rooney", clubs: ["Man United", "Everton", "DC United", "Derby County"] },
         { name: "Zinedine Zidane", clubs: ["Real Madrid", "Juventus", "Bordeaux", "Cannes"] },
         { name: "David Beckham", clubs: ["Man United", "Real Madrid", "LA Galaxy", "AC Milan", "PSG"] },
-        { name: "Ronaldinho", clubs: ["Barcelona", "PSG", "AC Milan", "Flamengo", "Queretaro"] },
+        { name: "Ronaldinho", clubs: ["Barcelona", "PSG", "AC Milan", "Flamengo", "Queretaro", "Gremio"] },
         { name: "Thierry Henry", clubs: ["Arsenal", "Barcelona", "Monaco", "Juventus", "NY Red Bulls"] },
+        { name: "Ronaldo Nazario", clubs: ["Real Madrid", "Barcelona", "Inter Milan", "AC Milan", "PSV", "Cruzeiro"] },
+        { name: "Zlatan Ibrahimovic", clubs: ["AC Milan", "Inter Milan", "Juventus", "PSG", "Barcelona", "Man United", "Ajax", "LA Galaxy", "Malmo"] },
+        { name: "Luis Suarez", clubs: ["Liverpool", "Barcelona", "Atletico Madrid", "Ajax", "Inter Miami", "Gremio", "Nacional"] },
+        
+        // CURRENT STARS
         { name: "Kylian Mbappe", clubs: ["Real Madrid", "PSG", "Monaco"] },
         { name: "Erling Haaland", clubs: ["Manchester City", "Borussia Dortmund", "Red Bull Salzburg", "Molde"] },
         { name: "Jude Bellingham", clubs: ["Real Madrid", "Borussia Dortmund", "Birmingham City"] },
@@ -16,10 +21,32 @@ const database = {
         { name: "Vinicius Jr", clubs: ["Real Madrid", "Flamengo"] },
         { name: "Robert Lewandowski", clubs: ["Barcelona", "Bayern Munich", "Borussia Dortmund", "Lech Poznan"] },
         { name: "Neymar Jr", clubs: ["Al Hilal", "PSG", "Barcelona", "Santos"] },
-        { name: "Bukayo Saka", clubs: ["Arsenal"] },
-        { name: "Cole Palmer", clubs: ["Chelsea", "Manchester City"] },
         { name: "Antoine Griezmann", clubs: ["Atletico Madrid", "Barcelona", "Real Sociedad"] },
-        { name: "Lamine Yamal", clubs: ["Barcelona"] }
+        
+        // PREMIER LEAGUE 
+        { name: "Bukayo Saka", clubs: ["Arsenal"] }, // ONE CLUB MAN
+        { name: "Cole Palmer", clubs: ["Chelsea", "Manchester City"] },
+        { name: "Phil Foden", clubs: ["Manchester City"] }, // ONE CLUB MAN
+        { name: "Marcus Rashford", clubs: ["Man United"] }, // ONE CLUB MAN
+        { name: "Virgil van Dijk", clubs: ["Liverpool", "Southampton", "Celtic", "Groningen"] },
+        { name: "Son Heung-min", clubs: ["Tottenham", "Bayer Leverkusen", "Hamburg"] },
+        { name: "Bruno Fernandes", clubs: ["Man United", "Sporting CP", "Sampdoria", "Udinese"] },
+        { name: "Declan Rice", clubs: ["Arsenal", "West Ham"] },
+        
+        // YOUNG TALENTS
+        { name: "Lamine Yamal", clubs: ["Barcelona"] }, // ONE CLUB MAN
+        { name: "Florian Wirtz", clubs: ["Bayer Leverkusen"] }, // ONE CLUB MAN
+        { name: "Jamal Musiala", clubs: ["Bayern Munich"] }, // ONE CLUB MAN
+        { name: "Gavi", clubs: ["Barcelona"] }, // ONE CLUB MAN
+        { name: "Pedri", clubs: ["Barcelona", "Las Palmas"] },
+        { name: "Arda Guler", clubs: ["Real Madrid", "Fenerbahce"] },
+        
+        // GOALKEEPERS & DEFENDERS
+        { name: "Alisson Becker", clubs: ["Liverpool", "Roma", "Internacional"] },
+        { name: "Thibaut Courtois", clubs: ["Real Madrid", "Chelsea", "Atletico Madrid", "Genk"] },
+        { name: "Sergio Ramos", clubs: ["Real Madrid", "PSG", "Sevilla"] },
+        { name: "Alphonso Davies", clubs: ["Bayern Munich", "Vancouver Whitecaps"] },
+        { name: "Achraf Hakimi", clubs: ["PSG", "Inter Milan", "Borussia Dortmund", "Real Madrid"] }
     ]
 };
 
@@ -269,4 +296,5 @@ window.onload = () => {
     [...new Set(opts)].sort().forEach(o => {
         const el = document.createElement('option'); el.value = o; list.appendChild(el);
     });
+
 };

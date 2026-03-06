@@ -32,21 +32,20 @@ const database = {
 
         // --- ISL (INDIA) ---
         { name: "Sunil Chhetri", clubs: ["Mohun Bagan", "JCT", "East Bengal", "Kansas City Wizards", "Sporting CP B", "Bengaluru FC", "Mumbai City"] },
-        { name: "Jason Cummings", clubs: ["Hibernian", "Nottingham Forest", "Luton Town", "Peterborough United", "Shrewsbury Town", "Dundee", "Central Coast Mariners", "Mohun Bagan"] },
-        { name: "Nicolas Anelka", clubs: ["PSG", "Arsenal", "Real Madrid", "Liverpool", "Manchester City", "Fenerbahce", "Bolton", "Chelsea", "Juventus", "Shanghai Shenhua", "West Brom", "Mumbai City"] },
-        { name: "Adrian Luna", clubs: ["Defensor Sporting", "Espanyol", "Gimnastic", "Sabadell", "Veracruz", "Venados", "Melbourne City", "Kerala Blasters"] },
+        { name: "Jason Cummings", clubs: ["Hibernian", "Nottingham Forest", "Shrewsbury Town", "Dundee", "Central Coast Mariners", "Mohun Bagan"] },
+        { name: "Nicolas Anelka", clubs: ["PSG", "Arsenal", "Real Madrid", "Liverpool", "Manchester City", "Fenerbahce", "Bolton", "Chelsea", "Juventus", "Mumbai City"] },
 
         // --- K-LEAGUE (SOUTH KOREA) ---
         { name: "Jesse Lingard", clubs: ["Manchester United", "Leicester City", "Birmingham City", "Brighton", "Derby County", "West Ham", "Nottingham Forest", "FC Seoul"] },
         { name: "Son Heung-min", clubs: ["Hamburg", "Bayer Leverkusen", "Tottenham"] },
-        { name: "Kim Min-jae", clubs: ["Gyeongju KHNP", "Jeonbuk Hyundai", "Beijing Guoan", "Fenerbahce", "Napoli", "Bayern Munich"] },
+        { name: "Kim Min-jae", clubs: ["Jeonbuk Hyundai", "Beijing Guoan", "Fenerbahce", "Napoli", "Bayern Munich"] },
 
         // --- CURRENT SUPERSTARS ---
         { name: "Kylian Mbappe", clubs: ["Monaco", "PSG", "Real Madrid"] },
         { name: "Erling Haaland", clubs: ["Bryne", "Molde", "Red Bull Salzburg", "Borussia Dortmund", "Manchester City"] },
         { name: "Harry Kane", clubs: ["Leyton Orient", "Millwall", "Norwich City", "Leicester City", "Tottenham", "Bayern Munich"] },
         { name: "Jude Bellingham", clubs: ["Birmingham City", "Borussia Dortmund", "Real Madrid"] },
-        { name: "Robert Lewandowski", clubs: ["Znicz Pruszkow", "Lech Poznan", "Borussia Dortmund", "Bayern Munich", "Barcelona"] },
+        { name: "Robert Lewandowski", clubs: ["Lech Poznan", "Borussia Dortmund", "Bayern Munich", "Barcelona"] },
 
         // --- ONE CLUB PLAYER TRAPS ---
         { name: "Bukayo Saka", clubs: ["Arsenal"] },
@@ -56,6 +55,19 @@ const database = {
         { name: "Francesco Totti", clubs: ["Roma"] },
         { name: "Florian Wirtz", clubs: ["Bayer Leverkusen"] }
     ]
+};
+
+// PeerJS Configuration with STUN Servers for Phone-to-Laptop connection
+const peerConfig = {
+    config: {
+        'iceServers': [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' }
+        ]
+    }
 };
 
 const game = {
@@ -231,7 +243,7 @@ const online = {
     peer: null, conn: null, connections: [], isHost: false, myName: "",
     createRoom() {
         this.myName = document.querySelector('.party-name').value || "Host";
-        this.peer = new Peer();
+        this.peer = new Peer(peerConfig); // Using STUN servers
         this.isHost = true;
         game.players = [this.myName];
         this.peer.on('open', id => {
@@ -244,11 +256,12 @@ const online = {
         const id = document.getElementById('join-id').value.trim();
         if (!id) return alert("Enter Room ID!");
         this.myName = document.querySelector('.party-name').value || "Player" + Math.floor(Math.random()*99);
-        this.peer = new Peer();
+        this.peer = new Peer(peerConfig); // Using STUN servers
         this.peer.on('open', () => {
             this.conn = this.peer.connect(id);
             this.setupConn(this.conn);
         });
+        this.peer.on('error', err => { console.error(err); alert("Join failed!"); });
     },
     setupConn(c) {
         c.on('open', () => { if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName }); });

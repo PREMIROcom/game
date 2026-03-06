@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Chain: Online Edition ⚽</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div id="screen-home" class="screen active">
+            <div class="logo">FOOTBALL<br>CHAIN</div>
+            
+            <div class="online-box" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <button class="btn" onclick="online.createRoom()">CREATE ROOM</button>
+                <div style="margin: 10px 0;">
+                    <input type="text" id="join-id" class="name-input" style="width: 60%;" placeholder="Room ID...">
+                    <button class="btn" onclick="online.joinRoom()" style="width: 30%;">JOIN</button>
+                </div>
+                <p id="room-display" style="color: #f5c518; font-weight: bold; font-size: 0.8em;"></p>
+            </div>
+
+            <div id="party-names-container">
+                <input type="text" class="name-input party-name" placeholder="Your Name">
+            </div>
+            
+            <button class="btn add-btn" id="add-player-btn" onclick="ui.addNameField()">+ ADD LOCAL PLAYER</button>
+            <button class="btn start-btn" id="start-online-btn" style="display:none; background: #f5c518; color: black;" onclick="online.broadcastStart()">START ONLINE MATCH</button>
+            <button class="btn start-btn" id="start-local-btn" onclick="game.startParty()">START LOCAL PARTY</button>
+            <hr style="width: 80%; border: 1px solid rgba(255,255,255,0.2); margin: 10px;">
+            <button class="btn ai-btn" onclick="game.start('ai')">VS AI MODE</button>
+        </div>
+
+        <div id="screen-game" class="screen">
+            <div id="turn-status">READY?</div>
+            <div id="game-feed"></div>
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="Type player or club..." autocomplete="off" list="player-list">
+                <datalist id="player-list"></datalist>
+                
+                <button class="btn" id="one-club-btn" style="background: #444; font-size: 11px; margin-bottom: 5px;" onclick="game.handleOneClub()">ONE CLUB PLAYER</button>
+                
+                <button class="btn" id="submit-btn" onclick="game.handleInput()">SUBMIT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="victory-screen" class="overlay">
+        <div class="vic-content">
+            <h1 id="winner-name">GAME OVER</h1>
+            <p id="vic-msg">CHAIN BROKEN</p>
+            <button class="btn" onclick="location.reload()">BACK TO MENU</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

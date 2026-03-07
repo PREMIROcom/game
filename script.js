@@ -20,7 +20,6 @@ const database = {
         { name: "Sadio Mane", clubs: ["Metz", "Red Bull Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"] },
         { name: "N'Golo Kante", clubs: ["Boulogne", "Caen", "Leicester City", "Chelsea", "Al Ittihad"] },
         { name: "Riyad Mahrez", clubs: ["Le Havre", "Leicester City", "Manchester City", "Al Ahli"] },
-        { name: "Ivan Rakitic", clubs: ["Basel", "Schalke 04", "Sevilla", "Barcelona", "Al Shabab"] },
 
         // --- MLS (USA) ---
         { name: "Lionel Messi", clubs: ["Barcelona", "PSG", "Inter Miami"] },
@@ -28,7 +27,6 @@ const database = {
         { name: "Sergio Busquets", clubs: ["Barcelona", "Inter Miami"] },
         { name: "Jordi Alba", clubs: ["Valencia", "Gimnastic", "Barcelona", "Inter Miami"] },
         { name: "Olivier Giroud", clubs: ["Grenoble", "Istres", "Tours", "Montpellier", "Arsenal", "Chelsea", "AC Milan", "LAFC"] },
-        { name: "Marco Reus", clubs: ["Rot Weiss Ahlen", "Monchengladbach", "Borussia Dortmund", "LA Galaxy"] },
 
         // --- ISL (INDIA) ---
         { name: "Sunil Chhetri", clubs: ["Mohun Bagan", "JCT", "East Bengal", "Kansas City Wizards", "Sporting CP B", "Bengaluru FC", "Mumbai City"] },
@@ -38,34 +36,31 @@ const database = {
         // --- K-LEAGUE (SOUTH KOREA) ---
         { name: "Jesse Lingard", clubs: ["Manchester United", "Leicester City", "Birmingham City", "Brighton", "Derby County", "West Ham", "Nottingham Forest", "FC Seoul"] },
         { name: "Son Heung-min", clubs: ["Hamburg", "Bayer Leverkusen", "Tottenham"] },
-        { name: "Kim Min-jae", clubs: ["Jeonbuk Hyundai", "Beijing Guoan", "Fenerbahce", "Napoli", "Bayern Munich"] },
 
         // --- CURRENT SUPERSTARS ---
         { name: "Kylian Mbappe", clubs: ["Monaco", "PSG", "Real Madrid"] },
         { name: "Erling Haaland", clubs: ["Bryne", "Molde", "Red Bull Salzburg", "Borussia Dortmund", "Manchester City"] },
         { name: "Harry Kane", clubs: ["Leyton Orient", "Millwall", "Norwich City", "Leicester City", "Tottenham", "Bayern Munich"] },
         { name: "Jude Bellingham", clubs: ["Birmingham City", "Borussia Dortmund", "Real Madrid"] },
-        { name: "Robert Lewandowski", clubs: ["Lech Poznan", "Borussia Dortmund", "Bayern Munich", "Barcelona"] },
 
         // --- ONE CLUB PLAYER TRAPS ---
         { name: "Bukayo Saka", clubs: ["Arsenal"] },
         { name: "Phil Foden", clubs: ["Manchester City"] },
         { name: "Lamine Yamal", clubs: ["Barcelona"] },
-        { name: "Thomas Muller", clubs: ["Bayern Munich"] },
-        { name: "Francesco Totti", clubs: ["Roma"] },
-        { name: "Florian Wirtz", clubs: ["Bayer Leverkusen"] }
+        { name: "Thomas Muller", clubs: ["Bayern Munich"] }
     ]
 };
 
-// PeerJS Configuration with STUN Servers for Phone-to-Laptop connection
+// Advanced PeerJS Configuration to help phones find each other
 const peerConfig = {
     config: {
         'iceServers': [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
             { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' }
+            { urls: 'stun:stun.voiparound.com' },
+            { urls: 'stun:stun.schlund.de' },
+            { urls: 'stun:stun.stuntmanit.co.uk' }
         ]
     }
 };
@@ -112,10 +107,7 @@ const game = {
         if (!raw) return;
 
         const cleanRaw = this.simplify(raw);
-        if (cleanRaw === this.lastUsed) {
-            alert("No immediate repeats!");
-            return;
-        }
+        if (cleanRaw === this.lastUsed) return alert("No immediate repeats!");
 
         let foundName = null;
         for (const p of database.players) {
@@ -160,7 +152,7 @@ const game = {
             this.updateTurnUI();
             this.resetTimer();
         } else {
-            alert("This player has other clubs in the database!");
+            alert("This player has other clubs!");
         }
     },
 
@@ -243,7 +235,7 @@ const online = {
     peer: null, conn: null, connections: [], isHost: false, myName: "",
     createRoom() {
         this.myName = document.querySelector('.party-name').value || "Host";
-        this.peer = new Peer(peerConfig); // Using STUN servers
+        this.peer = new Peer(peerConfig);
         this.isHost = true;
         game.players = [this.myName];
         this.peer.on('open', id => {
@@ -256,12 +248,12 @@ const online = {
         const id = document.getElementById('join-id').value.trim();
         if (!id) return alert("Enter Room ID!");
         this.myName = document.querySelector('.party-name').value || "Player" + Math.floor(Math.random()*99);
-        this.peer = new Peer(peerConfig); // Using STUN servers
+        this.peer = new Peer(peerConfig);
         this.peer.on('open', () => {
-            this.conn = this.peer.connect(id);
+            this.conn = this.peer.connect(id, { reliable: true });
             this.setupConn(this.conn);
         });
-        this.peer.on('error', err => { console.error(err); alert("Join failed!"); });
+        this.peer.on('error', err => { console.error(err); alert("Join Failed! Try Refreshing."); });
     },
     setupConn(c) {
         c.on('open', () => { if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName }); });

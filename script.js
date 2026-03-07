@@ -7,20 +7,23 @@ const database = {
         { name: "Neymar Jr", clubs: ["Santos", "Barcelona", "PSG", "Al Hilal"] },
         { name: "Kylian Mbappe", clubs: ["Monaco", "PSG", "Real Madrid"] },
         { name: "Erling Haaland", clubs: ["Borussia Dortmund", "Manchester City"] },
-        { name: "Harry Kane", clubs: ["Tottenham", "Bayern Munich"] },
-        { name: "Bukayo Saka", clubs: ["Arsenal"] },
-        { name: "Phil Foden", clubs: ["Manchester City"] },
-        { name: "Lamine Yamal", clubs: ["Barcelona"] }
+        { name: "Harry Kane", clubs: ["Tottenham", "Bayern Munich"] }
     ]
 };
 
+// IMPROVED CONFIG: Using multiple Google STUN servers for better "drilling" through firewalls
 const peerConfig = {
     secure: true,
+    debug: 3,
     config: {
         'iceServers': [
             { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' }
-        ]
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' }
+        ],
+        'iceCandidatePoolSize': 10
     }
 };
 
@@ -35,7 +38,7 @@ const game = {
         this.lastUsed = this.simplify(this.target);
         ui.showScreen('screen-game');
         ui.clearLog();
-        ui.addLog("SYSTEM", "MATCH STARTED!", "#ffffff");
+        ui.addLog("SYSTEM", "MATCH STARTED!", "#76c74d");
         this.updateTurnUI();
         this.startTimer(); 
     },
@@ -59,20 +62,17 @@ const game = {
         if (!raw) return;
         
         const cleanRaw = this.simplify(raw);
-        if (cleanRaw === this.lastUsed) return;
-
         let foundName = null;
         for (const p of database.players) {
             if (cleanRaw === this.simplify(p.name)) { foundName = p.name; break; }
             for (const c of p.clubs) { if (cleanRaw === this.simplify(c)) { foundName = c; break; } }
         }
 
-        const clean = this.simplify(foundName || "");
-        if (foundName && !this.usedItems.includes(clean)) {
+        if (foundName && !this.usedItems.includes(this.simplify(foundName))) {
             this.processMove(this.players[this.turnIndex], foundName);
             if (this.mode === 'online') online.sendData({ type: 'MOVE', user: online.myName, move: foundName });
         } else {
-            this.eliminatePlayer(this.turnIndex, "WRONG");
+            ui.addLog("SYSTEM", "WRONG PLAYER OR CLUB", "#ff4d4d");
         }
         input.value = "";
     },
@@ -87,24 +87,6 @@ const game = {
         this.timeLeft = 20; 
     },
 
-    eliminatePlayer(index, reason) {
-        ui.addLog("OUT", `${this.players[index]} (${reason})`, "#ff4d4d");
-        this.players.splice(index, 1);
-        if (this.players.length <= 1) {
-            this.showVictory(`${this.players[0] || "OVER"} WINS!`);
-        } else {
-            if (this.turnIndex >= this.players.length) this.turnIndex = 0;
-            this.updateTurnUI();
-            this.timeLeft = 20;
-        }
-    },
-
-    showVictory(msg) {
-        clearInterval(this.timer);
-        document.getElementById('winner-name').innerText = msg;
-        document.getElementById('victory-screen').style.display = 'flex';
-    },
-
     startTimer() {
         if (this.timer) clearInterval(this.timer);
         this.timeLeft = 20;
@@ -112,46 +94,67 @@ const game = {
             this.timeLeft--;
             const status = document.getElementById('turn-status');
             if (status) status.innerText = `${this.timeLeft}s | ${this.players[this.turnIndex].toUpperCase()}`;
-            if (this.timeLeft <= 0) this.eliminatePlayer(this.turnIndex, "TIME");
+            if (this.timeLeft <= 0) {
+                ui.addLog("SYSTEM", "TIME OUT!", "#ff4d4d");
+                this.turnIndex = (this.turnIndex + 1) % this.players.length;
+                this.updateTurnUI();
+                this.timeLeft = 20;
+            }
         }, 1000);
     }
 };
 
 const online = {
     peer: null, conn: null, connections: [], isHost: false, myName: "",
+
     createRoom() {
         this.cleanup();
         this.myName = document.querySelector('.party-name').value || "Host";
+        ui.addLog("SYSTEM", "CREATING ROOM...", "#f5c518");
         this.peer = new Peer(peerConfig);
         this.isHost = true;
         game.players = [this.myName];
+
         this.peer.on('open', id => {
-            document.getElementById('room-display').innerText = id;
-            const startBtn = document.getElementById('start-online-btn');
-            if(startBtn) startBtn.style.display = "block";
+            document.getElementById('room-display').innerText = "ID: " + id;
+            document.getElementById('start-online-btn').style.display = "block";
+            ui.addLog("SYSTEM", "ROOM READY!", "#76c74d");
         });
+
         this.peer.on('connection', c => {
             this.connections.push(c);
             this.setupConn(c);
         });
-    },
-    joinRoom() {
-        const idInput = document.getElementById('join-id');
-        const id = idInput ? idInput.value.trim().toLowerCase() : "";
-        if(!id) return alert("Enter ID!");
-        this.cleanup();
-        this.myName = document.querySelector('.party-name').value || "Guest";
-        this.peer = new Peer(peerConfig);
-        this.peer.on('open', () => {
-            this.conn = this.peer.connect(id);
-            this.setupConn(this.conn);
+
+        this.peer.on('error', err => {
+            ui.addLog("ERROR", err.type, "#ff4d4d");
         });
     },
+
+    joinRoom() {
+        const id = document.getElementById('join-id').value.trim().toLowerCase();
+        if(!id) return alert("Type Room ID");
+        this.cleanup();
+        this.myName = document.querySelector('.party-name').value || "Guest";
+        ui.addLog("SYSTEM", "JOINING...", "#f5c518");
+        
+        this.peer = new Peer(peerConfig);
+        this.peer.on('open', () => {
+            this.conn = this.peer.connect(id, { reliable: true });
+            this.setupConn(this.conn);
+        });
+
+        this.peer.on('error', err => {
+            ui.addLog("ERROR", "JOIN FAILED: " + err.type, "#ff4d4d");
+        });
+    },
+
     setupConn(c) {
         c.on('open', () => {
             ui.addLog("SYSTEM", "CONNECTED!", "#76c74d");
             if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName });
         });
+
         c.on('data', data => {
             if (data.type === 'HELLO' && this.isHost) {
                 if (!game.players.includes(data.name)) game.players.push(data.name);
@@ -163,6 +166,7 @@ const online = {
             if (data.type === 'MOVE') game.processMove(data.user, data.move);
         });
     },
+
     cleanup() { if (this.peer) this.peer.destroy(); },
     sendData(d) { if (this.conn) this.conn.send(d); },
     broadcast(d) { this.connections.forEach(c => c.send(d)); },
@@ -172,8 +176,7 @@ const online = {
 const ui = {
     showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        const target = document.getElementById(id);
-        if(target) target.classList.add('active');
+        document.getElementById(id).classList.add('active');
     },
     updateOnlineList() {
         const container = document.getElementById('party-names-container');
@@ -189,32 +192,10 @@ const ui = {
     }
 };
 
-// --- THIS SECTION FIXES THE BUTTONS ON MOBILE ---
 window.onload = () => {
-    // 1. Setup the Dropdown list
-    const list = document.getElementById('player-list');
-    if (list) {
-        let opts = [];
-        database.players.forEach(p => { 
-            opts.push(p.name); 
-            p.clubs.forEach(c => opts.push(c)); 
-        });
-        [...new Set(opts)].sort().forEach(o => {
-            const el = document.createElement('option'); el.value = o; list.appendChild(el);
-        });
-    }
-
-    // 2. Force link buttons to functions (Mobile Fix)
-    const btnMap = {
-        'create-room-btn': () => online.createRoom(),
-        'join-room-btn': () => online.joinRoom(),
-        'start-online-btn': () => online.broadcastStart(),
-        'submit-move-btn': () => game.handleInput(),
-        'play-ai-btn': () => { game.players = ["YOU", "AI"]; game.mode = "ai"; game.initGameState(); }
-    };
-
-    for (const [id, func] of Object.entries(btnMap)) {
-        const btn = document.getElementById(id);
-        if (btn) btn.onclick = func;
-    }
+    // Map buttons to functions manually
+    document.getElementById('create-room-btn').onclick = () => online.createRoom();
+    document.getElementById('join-room-btn').onclick = () => online.joinRoom();
+    document.getElementById('start-online-btn').onclick = () => online.broadcastStart();
+    document.getElementById('submit-move-btn').onclick = () => game.handleInput();
 };

@@ -1,260 +1,209 @@
 const database = {
     players: [
         { name: "Pele", clubs: ["Santos", "New York Cosmos"] },
-        { name: "Diego Maradona", clubs: ["Boca Juniors", "Barcelona", "Napoli", "Sevilla"] },
+        { name: "Diego Maradona", clubs: ["Boca Juniors", "Barcelona", "Napoli", "Sevilla", "Newell's Old Boys"] },
+        { name: "Johan Cruyff", clubs: ["Ajax", "Barcelona", "Feyenoord"] },
+        { name: "Zinedine Zidane", clubs: ["Bordeaux", "Juventus", "Real Madrid"] },
+        { name: "Ronaldo Nazario", clubs: ["Cruzeiro", "PSV Eindhoven", "Barcelona", "Inter Milan", "Real Madrid", "AC Milan"] },
         { name: "Cristiano Ronaldo", clubs: ["Sporting CP", "Manchester United", "Real Madrid", "Juventus", "Al Nassr"] },
         { name: "Lionel Messi", clubs: ["Barcelona", "PSG", "Inter Miami"] },
-        { name: "Neymar Jr", clubs: ["Santos", "Barcelona", "PSG", "Al Hilal"] },
+        { name: "Thierry Henry", clubs: ["Monaco", "Juventus", "Arsenal", "Barcelona", "New York Red Bulls"] },
+        { name: "Kevin De Bruyne", clubs: ["Chelsea", "Wolfsburg", "Manchester City"] },
+        { name: "Mohamed Salah", clubs: ["Chelsea", "Fiorentina", "Roma", "Liverpool"] },
+        { name: "Erling Haaland", clubs: ["Red Bull Salzburg", "Borussia Dortmund", "Manchester City"] },
+        { name: "Vinicius Jr", clubs: ["Flamengo", "Real Madrid"] },
+        { name: "Jude Bellingham", clubs: ["Birmingham City", "Borussia Dortmund", "Real Madrid"] },
         { name: "Kylian Mbappe", clubs: ["Monaco", "PSG", "Real Madrid"] },
-        { name: "Erling Haaland", clubs: ["Borussia Dortmund", "Manchester City"] },
-        { name: "Harry Kane", clubs: ["Tottenham", "Bayern Munich"] }
+        { name: "Harry Kane", clubs: ["Tottenham", "Bayern Munich"] },
+        { name: "Neymar Jr", clubs: ["Santos", "Barcelona", "PSG", "Al Hilal"] },
+        { name: "Luis Suarez", clubs: ["Ajax", "Liverpool", "Barcelona", "Atletico Madrid", "Inter Miami"] },
+        { name: "Robert Lewandowski", clubs: ["Borussia Dortmund", "Bayern Munich", "Barcelona"] },
+        { name: "Bukayo Saka", clubs: ["Arsenal"] },
+        { name: "Phil Foden", clubs: ["Manchester City"] },
+        { name: "Cole Palmer", clubs: ["Manchester City", "Chelsea"] },
+        { name: "Luka Modric", clubs: ["Tottenham", "Real Madrid"] }
     ]
 };
 
-// ... (keep your database and peerConfig as they are) ...
-
 const game = {
-    // ... (keep your existing game properties) ...
-    mode: 'local', target: "Cristiano Ronaldo", usedItems: [], lastUsed: "", 
-    timer: null, timeLeft: 20, players: [], turnIndex: 0, isMyTurn: true,
+    mode: 'local', 
+    target: "Cristiano Ronaldo", 
+    usedItems: [], 
+    players: [], 
+    turnIndex: 0, 
+    timeLeft: 20, 
+    timer: null,
 
-    // NEW: Function to start a local game with multiple names
-    startParty() {
-        const inputs = document.querySelectorAll('.party-name');
-        this.players = Array.from(inputs).map(i => i.value || `Player ${Math.floor(Math.random()*100)}`);
+    startLocal() {
+        const inputs = document.querySelectorAll('.local-name');
+        this.players = Array.from(inputs).map(i => i.value.trim()).filter(v => v !== "");
+        if (this.players.length < 1) this.players = ["Player 1"];
         this.mode = 'local';
-        this.initGameState();
+        this.init();
     },
 
-    // ... (keep simplify, updateTurnUI, processMove, etc.) ...
-
-    initGameState() {
-        this.turnIndex = 0;
-        this.target = "Cristiano Ronaldo";
+    init() {
         this.usedItems = [this.simplify(this.target)];
-        this.lastUsed = this.simplify(this.target);
         ui.showScreen('screen-game');
-        ui.clearLog();
-        ui.addLog("SYSTEM", "MATCH STARTED!", "#ffffff");
-        this.updateTurnUI();
-        this.startTimer(); 
+        ui.addLog("SYSTEM", `START WITH: ${this.target.toUpperCase()}`, "#f5c518");
+        this.startTimer();
+        this.updateUI();
     },
 
-    simplify(str) { return str.toLowerCase().replace(/[\s\.\-]/g, ""); },
-
-    updateTurnUI() {
-        const status = document.getElementById('turn-status');
-        const currentPlayer = this.players[this.turnIndex] || "Player";
-        this.isMyTurn = (this.mode === 'online') ? (currentPlayer === online.myName) : true;
-        if (status) {
-            status.innerText = `${currentPlayer.toUpperCase()}'S TURN`;
-            status.style.color = (this.turnIndex % 2 === 0) ? '#76c74d' : '#f5c518';
-        }
-    },
+    simplify: (str) => str.toLowerCase().replace(/[^a-z0-9]/g, ""),
 
     handleInput() {
-        if (!this.isMyTurn) return;
         const input = document.getElementById('user-input');
-        const raw = input.value.trim();
-        if (!raw) return;
-        
-        const cleanRaw = this.simplify(raw);
-        if (cleanRaw === this.lastUsed) return;
+        const val = input.value.trim();
+        if (!val) return;
 
-        let foundName = null;
-        for (const p of database.players) {
-            if (cleanRaw === this.simplify(p.name)) { foundName = p.name; break; }
-            for (const c of p.clubs) { if (cleanRaw === this.simplify(c)) { foundName = c; break; } }
-        }
+        const cleanInput = this.simplify(val);
+        if (this.usedItems.includes(cleanInput)) return alert("Already used!");
 
-        const clean = this.simplify(foundName || "");
-        let linked = false;
+        // Logic: Is it a player in the target club, or a club the target player played for?
+        let isValid = false;
+        const targetClean = this.simplify(this.target);
 
-        if (foundName && !this.usedItems.includes(clean)) {
-            const targetClean = this.simplify(this.target);
-            const pMatch = database.players.find(p => this.simplify(p.name) === targetClean);
-            if (pMatch && pMatch.clubs.some(c => this.simplify(c) === clean)) linked = true;
-            else {
-                const pFound = database.players.find(p => this.simplify(p.name) === clean && p.clubs.some(c => this.simplify(c) === targetClean));
-                if (pFound) linked = true;
+        // Check if input is a CLUB of the current target PLAYER
+        const currentPlayer = database.players.find(p => this.simplify(p.name) === targetClean);
+        if (currentPlayer && currentPlayer.clubs.some(c => this.simplify(c) === cleanInput)) {
+            isValid = true;
+        } 
+        // Check if input is a PLAYER who played for the current target CLUB
+        else {
+            const inputPlayer = database.players.find(p => this.simplify(p.name) === cleanInput);
+            if (inputPlayer && inputPlayer.clubs.some(c => this.simplify(c) === targetClean)) {
+                isValid = true;
             }
         }
 
-        if (linked) {
-            this.processMove(this.players[this.turnIndex], foundName);
-            if (this.mode === 'online') online.sendData({ type: 'MOVE', user: online.myName, move: foundName });
+        if (isValid) {
+            if (this.mode === 'online') {
+                online.sendData({ type: 'MOVE', move: val, user: online.myName });
+            } else {
+                this.processMove(this.players[this.turnIndex], val);
+            }
         } else {
-            this.eliminatePlayer(this.turnIndex, "WRONG");
+            this.eliminate();
         }
         input.value = "";
-        input.focus(); 
     },
 
     processMove(user, move) {
         ui.addLog(user, move.toUpperCase());
         this.target = move;
-        this.lastUsed = this.simplify(move);
         this.usedItems.push(this.simplify(move));
         this.turnIndex = (this.turnIndex + 1) % this.players.length;
-        this.updateTurnUI();
-        this.timeLeft = 20; 
+        this.timeLeft = 20;
+        this.updateUI();
     },
 
-    eliminatePlayer(index, reason) {
-        ui.addLog("OUT", `${this.players[index]} (${reason})`, "#ff4d4d");
-        this.players.splice(index, 1);
+    eliminate() {
+        ui.addLog("OUT", this.players[this.turnIndex], "#ff4d4d");
+        this.players.splice(this.turnIndex, 1);
         if (this.players.length <= 1) {
-            this.showVictory(`${this.players[0] || "OVER"} WINS!`);
-            if (this.mode === 'online') online.sendData({ type: 'WINNER', msg: `${this.players[0]} WINS!` });
+            this.endGame(this.players[0] || "No one");
         } else {
             if (this.turnIndex >= this.players.length) this.turnIndex = 0;
-            this.updateTurnUI();
             this.timeLeft = 20;
+            this.updateUI();
         }
     },
 
-    showVictory(msg) {
-        clearInterval(this.timer);
-        const winEl = document.getElementById('winner-name');
-        if (winEl) winEl.innerText = msg;
-        document.getElementById('victory-screen').style.display = 'flex';
+    updateUI() {
+        const status = document.getElementById('turn-status');
+        status.innerText = `${this.players[this.turnIndex]}'S TURN`;
     },
 
     startTimer() {
         if (this.timer) clearInterval(this.timer);
-        this.timeLeft = 20;
         this.timer = setInterval(() => {
             this.timeLeft--;
-            const status = document.getElementById('turn-status');
-            if (status) status.innerText = `${this.timeLeft}s | ${this.players[this.turnIndex].toUpperCase()}`;
-            if (this.timeLeft <= 0) this.eliminatePlayer(this.turnIndex, "TIME");
+            if (this.timeLeft <= 0) this.eliminate();
         }, 1000);
+    },
+
+    endGame(winner) {
+        clearInterval(this.timer);
+        document.getElementById('winner-name').innerText = winner + " WINS!";
+        document.getElementById('victory-screen').style.display = 'flex';
     }
 };
 
 const online = {
-    peer: null, connections: [], isHost: false, myName: "",
+    peer: null, conn: null, connections: [], myName: "", isHost: false,
     
     createRoom() {
-        this.cleanup();
-        this.myName = document.querySelector('.party-name').value || "Host";
-        
-        // Generates a 4-digit number for the Room ID
-        const shortId = Math.floor(1000 + Math.random() * 9000).toString();
-        this.peer = new Peer(shortId, peerConfig);
-        
+        this.myName = document.getElementById('my-nickname').value || "Host";
+        const randomId = Math.floor(1000 + Math.random() * 9000).toString();
+        this.peer = new Peer(randomId);
         this.isHost = true;
         game.players = [this.myName];
         
         this.peer.on('open', id => {
             document.getElementById('room-display').innerText = "ROOM ID: " + id;
             document.getElementById('start-online-btn').style.display = "block";
-            ui.updateOnlineList();
         });
-
         this.peer.on('connection', c => {
             this.connections.push(c);
-            this.setupConn(c);
-        });
-
-        this.peer.on('error', err => {
-            if(err.type === 'unavailable-id') alert("ID taken, try again!");
+            this.setupListeners(c);
         });
     },
 
     joinRoom() {
-        const id = document.getElementById('join-id').value.trim();
-        if(!id) return alert("Enter a Room ID");
-        this.cleanup();
-        this.myName = document.querySelector('.party-name').value || "Guest";
-        this.peer = new Peer(peerConfig);
-        
+        const id = document.getElementById('join-id').value;
+        this.myName = document.getElementById('my-nickname').value || "Guest";
+        this.peer = new Peer();
         this.peer.on('open', () => {
-            const conn = this.peer.connect(id);
-            this.setupConn(conn);
+            this.conn = this.peer.connect(id);
+            this.setupListeners(this.conn);
         });
     },
 
-    setupConn(c) {
+    setupListeners(c) {
         c.on('open', () => {
-            if (!this.isHost) {
-                this.conn = c; // Guests store the main connection
-                this.sendData({ type: 'HELLO', name: this.myName });
-            }
+            if (!this.isHost) this.sendData({ type: 'JOIN', name: this.myName });
         });
         c.on('data', data => {
-            if (data.type === 'HELLO' && this.isHost) {
-                if (!game.players.includes(data.name)) game.players.push(data.name);
-                this.broadcast({ type: 'LIST', list: game.players });
-                ui.updateOnlineList();
+            if (data.type === 'JOIN' && this.isHost) {
+                game.players.push(data.name);
+                this.broadcast({ type: 'LOBBY', list: game.players });
             }
-            if (data.type === 'LIST') { game.players = data.list; ui.updateOnlineList(); }
-            if (data.type === 'START') { game.mode = 'online'; game.initGameState(); }
+            if (data.type === 'LOBBY') {
+                document.getElementById('lobby-list').innerText = "Players: " + data.list.join(", ");
+                game.players = data.list;
+            }
+            if (data.type === 'START') { game.mode = 'online'; game.init(); }
             if (data.type === 'MOVE') game.processMove(data.user, data.move);
-            if (data.type === 'WINNER') game.showVictory(data.msg);
         });
     },
 
-    cleanup() { if (this.peer) this.peer.destroy(); },
-    
-    sendData(d) { 
-        if (this.isHost) this.broadcast(d);
-        else if (this.conn) this.conn.send(d); 
-    },
-    
+    sendData(d) { if (this.conn) this.conn.send(d); },
     broadcast(d) { this.connections.forEach(c => c.send(d)); },
-    
-    broadcastStart() { 
-        this.broadcast({ type: 'START' }); 
-        game.mode = 'online'; 
-        game.initGameState(); 
-    }
+    broadcastStart() { this.broadcast({ type: 'START' }); game.mode = 'online'; game.init(); }
 };
 
 const ui = {
-    // ... (keep showScreen, clearLog, addLog) ...
     showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     },
-    clearLog() { document.getElementById('game-feed').innerHTML = ""; },
+    addNameField() {
+        const input = document.createElement('input');
+        input.className = "name-input local-name";
+        input.placeholder = "Next Player";
+        document.getElementById('local-names-container').appendChild(input);
+    },
     addLog(user, msg, color = "white") {
         const feed = document.getElementById('game-feed');
-        if (feed) {
-            feed.insertAdjacentHTML('beforeend', `<div style="color:${color}; margin-bottom:4px; font-size:14px;"><b>${user}:</b> ${msg}</div>`);
-            feed.scrollTop = feed.scrollHeight;
-        }
-    },
-    addNameField() {
-        const container = document.getElementById('party-names-container');
-        const input = document.createElement('input');
-        input.type = "text";
-        input.className = "name-input party-name";
-        input.placeholder = "Friend Name";
-        container.appendChild(input);
-    },
-    updateOnlineList() {
-        const container = document.getElementById('party-names-container');
-        if (container) container.innerHTML = `<p style="color:#f5c518">Lobby: ${game.players.join(", ")}</p>`;
+        feed.innerHTML += `<div style="color:${color}"><b>${user}:</b> ${msg}</div>`;
+        feed.scrollTop = feed.scrollHeight;
     }
 };
 
-window.onload = () => {
-    // Populate datalist for autocomplete
-    const list = document.getElementById('player-list');
-    if (list) {
-        let opts = [];
-        database.players.forEach(p => { 
-            opts.push(p.name); 
-            p.clubs.forEach(c => opts.push(c)); 
-        });
-        [...new Set(opts)].sort().forEach(o => {
-            const el = document.createElement('option'); el.value = o; list.appendChild(el);
-        });
+// Enter key support
+document.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && document.getElementById('screen-game').classList.contains('active')) {
+        game.handleInput();
     }
-
-    // Add "Enter" key support for mobile/desktop
-    document.getElementById('user-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') game.handleInput();
-    });
-};
+});

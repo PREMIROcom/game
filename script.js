@@ -26,16 +26,10 @@ const database = {
         { name: "Luis Suarez", clubs: ["Nacional", "Groningen", "Ajax", "Liverpool", "Barcelona", "Atletico Madrid", "Gremio", "Inter Miami"] },
         { name: "Sergio Busquets", clubs: ["Barcelona", "Inter Miami"] },
         { name: "Jordi Alba", clubs: ["Valencia", "Gimnastic", "Barcelona", "Inter Miami"] },
-        { name: "Olivier Giroud", clubs: ["Grenoble", "Istres", "Tours", "Montpellier", "Arsenal", "Chelsea", "AC Milan", "LAFC"] },
 
-        // --- ISL (INDIA) ---
+        // --- ISL & ASIA ---
         { name: "Sunil Chhetri", clubs: ["Mohun Bagan", "JCT", "East Bengal", "Kansas City Wizards", "Sporting CP B", "Bengaluru FC", "Mumbai City"] },
-        { name: "Jason Cummings", clubs: ["Hibernian", "Nottingham Forest", "Shrewsbury Town", "Dundee", "Central Coast Mariners", "Mohun Bagan"] },
-        { name: "Nicolas Anelka", clubs: ["PSG", "Arsenal", "Real Madrid", "Liverpool", "Manchester City", "Fenerbahce", "Bolton", "Chelsea", "Juventus", "Mumbai City"] },
-
-        // --- K-LEAGUE (SOUTH KOREA) ---
-        { name: "Jesse Lingard", clubs: ["Manchester United", "Leicester City", "Birmingham City", "Brighton", "Derby County", "West Ham", "Nottingham Forest", "FC Seoul"] },
-        { name: "Son Heung-min", clubs: ["Hamburg", "Bayer Leverkusen", "Tottenham"] },
+        { name: "Jesse Lingard", clubs: ["Manchester United", "Leicester City", "Brighton", "Derby County", "West Ham", "Nottingham Forest", "FC Seoul"] },
 
         // --- CURRENT SUPERSTARS ---
         { name: "Kylian Mbappe", clubs: ["Monaco", "PSG", "Real Madrid"] },
@@ -51,16 +45,12 @@ const database = {
     ]
 };
 
-// Advanced PeerJS Configuration to help phones find each other
 const peerConfig = {
     config: {
         'iceServers': [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun.voiparound.com' },
-            { urls: 'stun:stun.schlund.de' },
-            { urls: 'stun:stun.stuntmanit.co.uk' }
+            { urls: 'stun:stun2.l.google.com:19302' }
         ]
     }
 };
@@ -94,8 +84,7 @@ const game = {
     updateTurnUI() {
         const status = document.getElementById('turn-status');
         const currentPlayer = this.players[this.turnIndex];
-        if (this.mode === 'online') { this.isMyTurn = (currentPlayer === online.myName); } 
-        else { this.isMyTurn = true; }
+        this.isMyTurn = (this.mode === 'online') ? (currentPlayer === online.myName) : true;
         status.innerText = `${currentPlayer.toUpperCase()}'S TURN`;
         status.style.color = (this.turnIndex % 2 === 0) ? '#76c74d' : '#f5c518';
     },
@@ -107,7 +96,7 @@ const game = {
         if (!raw) return;
 
         const cleanRaw = this.simplify(raw);
-        if (cleanRaw === this.lastUsed) return alert("No immediate repeats!");
+        if (cleanRaw === this.lastUsed) return alert("No repeats!");
 
         let foundName = null;
         for (const p of database.players) {
@@ -233,6 +222,7 @@ const game = {
 
 const online = {
     peer: null, conn: null, connections: [], isHost: false, myName: "",
+
     createRoom() {
         this.myName = document.querySelector('.party-name').value || "Host";
         this.peer = new Peer(peerConfig);
@@ -242,21 +232,37 @@ const online = {
             document.getElementById('room-display').innerText = "ROOM ID: " + id;
             document.getElementById('start-online-btn').style.display = "block";
         });
-        this.peer.on('connection', c => { this.connections.push(c); this.setupConn(c); });
+        this.peer.on('connection', c => {
+            this.connections.push(c);
+            this.setupConn(c);
+        });
     },
+
     joinRoom() {
-        const id = document.getElementById('join-id').value.trim();
+        const id = document.getElementById('join-id').value.trim().toLowerCase();
         if (!id) return alert("Enter Room ID!");
         this.myName = document.querySelector('.party-name').value || "Player" + Math.floor(Math.random()*99);
+        
+        if (this.peer) this.peer.destroy();
         this.peer = new Peer(peerConfig);
+        
         this.peer.on('open', () => {
-            this.conn = this.peer.connect(id, { reliable: true });
-            this.setupConn(this.conn);
+            // Give the network 500ms to breathe before connecting
+            setTimeout(() => {
+                this.conn = this.peer.connect(id, { reliable: true });
+                this.setupConn(this.conn);
+            }, 500);
         });
-        this.peer.on('error', err => { console.error(err); alert("Join Failed! Try Refreshing."); });
+
+        this.peer.on('error', err => {
+            alert("Connection Error. Try refreshing both phones!");
+        });
     },
+
     setupConn(c) {
-        c.on('open', () => { if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName }); });
+        c.on('open', () => {
+            if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName });
+        });
         c.on('data', data => {
             if (data.type === 'HELLO' && this.isHost) {
                 if (!game.players.includes(data.name)) game.players.push(data.name);
@@ -266,10 +272,16 @@ const online = {
             if (data.type === 'LIST') { game.players = data.list; ui.updateOnlineList(); }
             if (data.type === 'START') { game.mode = 'online'; game.initGameState(); }
             if (data.type === 'MOVE') { game.processMove(data.user, data.move); }
-            if (data.type === 'SYNC') { game.players = data.list; game.turnIndex = data.index; game.updateTurnUI(); game.resetTimer(); }
+            if (data.type === 'SYNC') { 
+                game.players = data.list; 
+                game.turnIndex = data.index; 
+                game.updateTurnUI(); 
+                game.resetTimer(); 
+            }
             if (data.type === 'WINNER') { game.showVictory(data.msg); }
         });
     },
+
     sendData(d) { if (this.conn) this.conn.send(d); },
     broadcast(d) { this.connections.forEach(c => c.send(d)); },
     broadcastStart() { this.broadcast({ type: 'START' }); game.mode = 'online'; game.initGameState(); }
@@ -279,14 +291,6 @@ const ui = {
     showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-    },
-    addNameField() {
-        const container = document.getElementById('party-names-container');
-        const input = document.createElement('input');
-        input.type = "text";
-        input.className = "name-input party-name";
-        input.placeholder = "Player " + (container.querySelectorAll('input').length + 1);
-        container.appendChild(input);
     },
     updateOnlineList() {
         document.getElementById('party-names-container').innerHTML = `<p style="color:white">Lobby: ${game.players.join(", ")}</p>`;

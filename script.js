@@ -11,25 +11,22 @@ const database = {
     ]
 };
 
-// IMPROVED CONFIG: Using multiple Google STUN servers for better "drilling" through firewalls
-const peerConfig = {
-    secure: true,
-    debug: 3,
-    config: {
-        'iceServers': [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' }
-        ],
-        'iceCandidatePoolSize': 10
-    }
-};
+// ... (keep your database and peerConfig as they are) ...
 
 const game = {
+    // ... (keep your existing game properties) ...
     mode: 'local', target: "Cristiano Ronaldo", usedItems: [], lastUsed: "", 
     timer: null, timeLeft: 20, players: [], turnIndex: 0, isMyTurn: true,
+
+    // NEW: Function to start a local game with multiple names
+    startParty() {
+        const inputs = document.querySelectorAll('.party-name');
+        this.players = Array.from(inputs).map(i => i.value || `Player ${Math.floor(Math.random()*100)}`);
+        this.mode = 'local';
+        this.initGameState();
+    },
+
+    // ... (keep simplify, updateTurnUI, processMove, etc.) ...
 
     initGameState() {
         this.turnIndex = 0;
@@ -38,7 +35,7 @@ const game = {
         this.lastUsed = this.simplify(this.target);
         ui.showScreen('screen-game');
         ui.clearLog();
-        ui.addLog("SYSTEM", "MATCH STARTED!", "#76c74d");
+        ui.addLog("SYSTEM", "MATCH STARTED!", "#ffffff");
         this.updateTurnUI();
         this.startTimer(); 
     },
@@ -62,19 +59,35 @@ const game = {
         if (!raw) return;
         
         const cleanRaw = this.simplify(raw);
+        if (cleanRaw === this.lastUsed) return;
+
         let foundName = null;
         for (const p of database.players) {
             if (cleanRaw === this.simplify(p.name)) { foundName = p.name; break; }
             for (const c of p.clubs) { if (cleanRaw === this.simplify(c)) { foundName = c; break; } }
         }
 
-        if (foundName && !this.usedItems.includes(this.simplify(foundName))) {
+        const clean = this.simplify(foundName || "");
+        let linked = false;
+
+        if (foundName && !this.usedItems.includes(clean)) {
+            const targetClean = this.simplify(this.target);
+            const pMatch = database.players.find(p => this.simplify(p.name) === targetClean);
+            if (pMatch && pMatch.clubs.some(c => this.simplify(c) === clean)) linked = true;
+            else {
+                const pFound = database.players.find(p => this.simplify(p.name) === clean && p.clubs.some(c => this.simplify(c) === targetClean));
+                if (pFound) linked = true;
+            }
+        }
+
+        if (linked) {
             this.processMove(this.players[this.turnIndex], foundName);
             if (this.mode === 'online') online.sendData({ type: 'MOVE', user: online.myName, move: foundName });
         } else {
-            ui.addLog("SYSTEM", "WRONG PLAYER OR CLUB", "#ff4d4d");
+            this.eliminatePlayer(this.turnIndex, "WRONG");
         }
         input.value = "";
+        input.focus(); 
     },
 
     processMove(user, move) {
@@ -87,6 +100,26 @@ const game = {
         this.timeLeft = 20; 
     },
 
+    eliminatePlayer(index, reason) {
+        ui.addLog("OUT", `${this.players[index]} (${reason})`, "#ff4d4d");
+        this.players.splice(index, 1);
+        if (this.players.length <= 1) {
+            this.showVictory(`${this.players[0] || "OVER"} WINS!`);
+            if (this.mode === 'online') online.sendData({ type: 'WINNER', msg: `${this.players[0]} WINS!` });
+        } else {
+            if (this.turnIndex >= this.players.length) this.turnIndex = 0;
+            this.updateTurnUI();
+            this.timeLeft = 20;
+        }
+    },
+
+    showVictory(msg) {
+        clearInterval(this.timer);
+        const winEl = document.getElementById('winner-name');
+        if (winEl) winEl.innerText = msg;
+        document.getElementById('victory-screen').style.display = 'flex';
+    },
+
     startTimer() {
         if (this.timer) clearInterval(this.timer);
         this.timeLeft = 20;
@@ -94,31 +127,29 @@ const game = {
             this.timeLeft--;
             const status = document.getElementById('turn-status');
             if (status) status.innerText = `${this.timeLeft}s | ${this.players[this.turnIndex].toUpperCase()}`;
-            if (this.timeLeft <= 0) {
-                ui.addLog("SYSTEM", "TIME OUT!", "#ff4d4d");
-                this.turnIndex = (this.turnIndex + 1) % this.players.length;
-                this.updateTurnUI();
-                this.timeLeft = 20;
-            }
+            if (this.timeLeft <= 0) this.eliminatePlayer(this.turnIndex, "TIME");
         }, 1000);
     }
 };
 
 const online = {
-    peer: null, conn: null, connections: [], isHost: false, myName: "",
-
+    peer: null, connections: [], isHost: false, myName: "",
+    
     createRoom() {
         this.cleanup();
         this.myName = document.querySelector('.party-name').value || "Host";
-        ui.addLog("SYSTEM", "CREATING ROOM...", "#f5c518");
-        this.peer = new Peer(peerConfig);
+        
+        // Generates a 4-digit number for the Room ID
+        const shortId = Math.floor(1000 + Math.random() * 9000).toString();
+        this.peer = new Peer(shortId, peerConfig);
+        
         this.isHost = true;
         game.players = [this.myName];
-
+        
         this.peer.on('open', id => {
-            document.getElementById('room-display').innerText = "ID: " + id;
+            document.getElementById('room-display').innerText = "ROOM ID: " + id;
             document.getElementById('start-online-btn').style.display = "block";
-            ui.addLog("SYSTEM", "ROOM READY!", "#76c74d");
+            ui.updateOnlineList();
         });
 
         this.peer.on('connection', c => {
@@ -127,34 +158,30 @@ const online = {
         });
 
         this.peer.on('error', err => {
-            ui.addLog("ERROR", err.type, "#ff4d4d");
+            if(err.type === 'unavailable-id') alert("ID taken, try again!");
         });
     },
 
     joinRoom() {
-        const id = document.getElementById('join-id').value.trim().toLowerCase();
-        if(!id) return alert("Type Room ID");
+        const id = document.getElementById('join-id').value.trim();
+        if(!id) return alert("Enter a Room ID");
         this.cleanup();
         this.myName = document.querySelector('.party-name').value || "Guest";
-        ui.addLog("SYSTEM", "JOINING...", "#f5c518");
-        
         this.peer = new Peer(peerConfig);
+        
         this.peer.on('open', () => {
-            this.conn = this.peer.connect(id, { reliable: true });
-            this.setupConn(this.conn);
-        });
-
-        this.peer.on('error', err => {
-            ui.addLog("ERROR", "JOIN FAILED: " + err.type, "#ff4d4d");
+            const conn = this.peer.connect(id);
+            this.setupConn(conn);
         });
     },
 
     setupConn(c) {
         c.on('open', () => {
-            ui.addLog("SYSTEM", "CONNECTED!", "#76c74d");
-            if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName });
+            if (!this.isHost) {
+                this.conn = c; // Guests store the main connection
+                this.sendData({ type: 'HELLO', name: this.myName });
+            }
         });
-
         c.on('data', data => {
             if (data.type === 'HELLO' && this.isHost) {
                 if (!game.players.includes(data.name)) game.players.push(data.name);
@@ -164,38 +191,70 @@ const online = {
             if (data.type === 'LIST') { game.players = data.list; ui.updateOnlineList(); }
             if (data.type === 'START') { game.mode = 'online'; game.initGameState(); }
             if (data.type === 'MOVE') game.processMove(data.user, data.move);
+            if (data.type === 'WINNER') game.showVictory(data.msg);
         });
     },
 
     cleanup() { if (this.peer) this.peer.destroy(); },
-    sendData(d) { if (this.conn) this.conn.send(d); },
+    
+    sendData(d) { 
+        if (this.isHost) this.broadcast(d);
+        else if (this.conn) this.conn.send(d); 
+    },
+    
     broadcast(d) { this.connections.forEach(c => c.send(d)); },
-    broadcastStart() { this.broadcast({ type: 'START' }); game.mode = 'online'; game.initGameState(); }
+    
+    broadcastStart() { 
+        this.broadcast({ type: 'START' }); 
+        game.mode = 'online'; 
+        game.initGameState(); 
+    }
 };
 
 const ui = {
+    // ... (keep showScreen, clearLog, addLog) ...
     showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-    },
-    updateOnlineList() {
-        const container = document.getElementById('party-names-container');
-        if (container) container.innerHTML = `<p style="color:white">Lobby: ${game.players.join(", ")}</p>`;
     },
     clearLog() { document.getElementById('game-feed').innerHTML = ""; },
     addLog(user, msg, color = "white") {
         const feed = document.getElementById('game-feed');
         if (feed) {
-            feed.insertAdjacentHTML('beforeend', `<div style="color:${color}; margin-bottom:5px;"><b>${user}:</b> ${msg}</div>`);
+            feed.insertAdjacentHTML('beforeend', `<div style="color:${color}; margin-bottom:4px; font-size:14px;"><b>${user}:</b> ${msg}</div>`);
             feed.scrollTop = feed.scrollHeight;
         }
+    },
+    addNameField() {
+        const container = document.getElementById('party-names-container');
+        const input = document.createElement('input');
+        input.type = "text";
+        input.className = "name-input party-name";
+        input.placeholder = "Friend Name";
+        container.appendChild(input);
+    },
+    updateOnlineList() {
+        const container = document.getElementById('party-names-container');
+        if (container) container.innerHTML = `<p style="color:#f5c518">Lobby: ${game.players.join(", ")}</p>`;
     }
 };
 
 window.onload = () => {
-    // Map buttons to functions manually
-    document.getElementById('create-room-btn').onclick = () => online.createRoom();
-    document.getElementById('join-room-btn').onclick = () => online.joinRoom();
-    document.getElementById('start-online-btn').onclick = () => online.broadcastStart();
-    document.getElementById('submit-move-btn').onclick = () => game.handleInput();
+    // Populate datalist for autocomplete
+    const list = document.getElementById('player-list');
+    if (list) {
+        let opts = [];
+        database.players.forEach(p => { 
+            opts.push(p.name); 
+            p.clubs.forEach(c => opts.push(c)); 
+        });
+        [...new Set(opts)].sort().forEach(o => {
+            const el = document.createElement('option'); el.value = o; list.appendChild(el);
+        });
+    }
+
+    // Add "Enter" key support for mobile/desktop
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') game.handleInput();
+    });
 };

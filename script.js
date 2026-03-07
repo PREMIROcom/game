@@ -1,6 +1,5 @@
 const database = {
     players: [
-        // --- THE GOATS & RETIRED LEGENDS ---
         { name: "Pele", clubs: ["Santos", "New York Cosmos"] },
         { name: "Diego Maradona", clubs: ["Argentinos Juniors", "Boca Juniors", "Barcelona", "Napoli", "Sevilla", "Newell's Old Boys"] },
         { name: "Johan Cruyff", clubs: ["Ajax", "Barcelona", "Los Angeles Aztecs", "Washington Diplomats", "Levante", "Feyenoord"] },
@@ -11,33 +10,13 @@ const database = {
         { name: "Thierry Henry", clubs: ["Monaco", "Juventus", "Arsenal", "Barcelona", "New York Red Bulls"] },
         { name: "David Beckham", clubs: ["Manchester United", "Preston North End", "Real Madrid", "LA Galaxy", "AC Milan", "PSG"] },
         { name: "Zlatan Ibrahimovic", clubs: ["Malmo", "Ajax", "Juventus", "Inter Milan", "Barcelona", "AC Milan", "PSG", "Manchester United", "LA Galaxy"] },
-        { name: "Gareth Bale", clubs: ["Southampton", "Tottenham", "Real Madrid", "LAFC"] },
-
-        // --- SAUDI PRO LEAGUE ---
         { name: "Cristiano Ronaldo", clubs: ["Sporting CP", "Manchester United", "Real Madrid", "Juventus", "Al Nassr"] },
         { name: "Neymar Jr", clubs: ["Santos", "Barcelona", "PSG", "Al Hilal"] },
-        { name: "Karim Benzema", clubs: ["Lyon", "Real Madrid", "Al Ittihad"] },
-        { name: "Sadio Mane", clubs: ["Metz", "Red Bull Salzburg", "Southampton", "Liverpool", "Bayern Munich", "Al Nassr"] },
-        { name: "N'Golo Kante", clubs: ["Boulogne", "Caen", "Leicester City", "Chelsea", "Al Ittihad"] },
-        { name: "Riyad Mahrez", clubs: ["Le Havre", "Leicester City", "Manchester City", "Al Ahli"] },
-
-        // --- MLS (USA) ---
         { name: "Lionel Messi", clubs: ["Barcelona", "PSG", "Inter Miami"] },
-        { name: "Luis Suarez", clubs: ["Nacional", "Groningen", "Ajax", "Liverpool", "Barcelona", "Atletico Madrid", "Gremio", "Inter Miami"] },
-        { name: "Sergio Busquets", clubs: ["Barcelona", "Inter Miami"] },
-        { name: "Jordi Alba", clubs: ["Valencia", "Gimnastic", "Barcelona", "Inter Miami"] },
-
-        // --- ISL & ASIA ---
-        { name: "Sunil Chhetri", clubs: ["Mohun Bagan", "JCT", "East Bengal", "Kansas City Wizards", "Sporting CP B", "Bengaluru FC", "Mumbai City"] },
-        { name: "Jesse Lingard", clubs: ["Manchester United", "Leicester City", "Brighton", "Derby County", "West Ham", "Nottingham Forest", "FC Seoul"] },
-
-        // --- CURRENT SUPERSTARS ---
         { name: "Kylian Mbappe", clubs: ["Monaco", "PSG", "Real Madrid"] },
         { name: "Erling Haaland", clubs: ["Bryne", "Molde", "Red Bull Salzburg", "Borussia Dortmund", "Manchester City"] },
         { name: "Harry Kane", clubs: ["Leyton Orient", "Millwall", "Norwich City", "Leicester City", "Tottenham", "Bayern Munich"] },
         { name: "Jude Bellingham", clubs: ["Birmingham City", "Borussia Dortmund", "Real Madrid"] },
-
-        // --- ONE CLUB PLAYER TRAPS ---
         { name: "Bukayo Saka", clubs: ["Arsenal"] },
         { name: "Phil Foden", clubs: ["Manchester City"] },
         { name: "Lamine Yamal", clubs: ["Barcelona"] },
@@ -52,7 +31,8 @@ const peerConfig = {
             { urls: 'stun:stun1.l.google.com:19302' },
             { urls: 'stun:stun2.l.google.com:19302' }
         ]
-    }
+    },
+    debug: 3 // This will show errors in the browser console
 };
 
 const game = {
@@ -85,8 +65,10 @@ const game = {
         const status = document.getElementById('turn-status');
         const currentPlayer = this.players[this.turnIndex];
         this.isMyTurn = (this.mode === 'online') ? (currentPlayer === online.myName) : true;
-        status.innerText = `${currentPlayer.toUpperCase()}'S TURN`;
-        status.style.color = (this.turnIndex % 2 === 0) ? '#76c74d' : '#f5c518';
+        if (status) {
+            status.innerText = `${currentPlayer.toUpperCase()}'S TURN`;
+            status.style.color = (this.turnIndex % 2 === 0) ? '#76c74d' : '#f5c518';
+        }
     },
 
     handleInput() {
@@ -130,7 +112,6 @@ const game = {
         if (!this.isMyTurn) return;
         const targetClean = this.simplify(this.target);
         const pMatch = database.players.find(p => this.simplify(p.name) === targetClean);
-
         if (pMatch && pMatch.clubs.length === 1) {
             const onlyClub = pMatch.clubs[0];
             ui.addLog(this.players[this.turnIndex], `STAYING ON ${onlyClub.toUpperCase()}!`, "#f5c518");
@@ -140,9 +121,7 @@ const game = {
             if (this.mode === 'online') online.sendData({ type: 'MOVE', user: online.myName, move: this.target });
             this.updateTurnUI();
             this.resetTimer();
-        } else {
-            alert("This player has other clubs!");
-        }
+        } else { alert("Not a One-Club Man!"); }
     },
 
     processMove(user, move) {
@@ -153,7 +132,6 @@ const game = {
         this.usedItems.push(clean);
         this.turnIndex = (this.turnIndex + 1) % this.players.length;
         this.updateTurnUI();
-        if (this.mode === 'ai' && this.turnIndex === 1) setTimeout(() => this.aiMove(), 1500);
         this.resetTimer();
     },
 
@@ -173,20 +151,10 @@ const game = {
         }
     },
 
-    aiMove() {
-        const targetClean = this.simplify(this.target);
-        let options = [];
-        const pObj = database.players.find(p => this.simplify(p.name) === targetClean);
-        if (pObj) { options = pObj.clubs; } 
-        else { options = database.players.filter(p => p.clubs.some(c => this.simplify(c) === targetClean)).map(p => p.name); }
-        const final = options.filter(o => !this.usedItems.includes(this.simplify(o)) && this.simplify(o) !== this.lastUsed);
-        if (final.length > 0) { this.processMove("AI", final[Math.floor(Math.random() * final.length)]); } 
-        else { this.eliminatePlayer(1, "AI STUCK"); }
-    },
-
     showVictory(msg) {
         clearInterval(this.timer);
-        document.getElementById('winner-name').innerText = msg;
+        const vName = document.getElementById('winner-name');
+        if (vName) vName.innerText = msg;
         document.getElementById('victory-screen').style.display = 'flex';
     },
 
@@ -196,27 +164,9 @@ const game = {
         this.timer = setInterval(() => {
             this.timeLeft--;
             const status = document.getElementById('turn-status');
-            status.innerText = `${this.timeLeft}s | ${this.players[this.turnIndex].toUpperCase()}`;
+            if (status) status.innerText = `${this.timeLeft}s | ${this.players[this.turnIndex].toUpperCase()}`;
             if (this.timeLeft <= 0) this.eliminatePlayer(this.turnIndex, "TIME OUT");
         }, 1000);
-    },
-
-    startParty() {
-        const inputs = document.querySelectorAll('.party-name');
-        this.players = [];
-        inputs.forEach(input => { if (input.value.trim()) this.players.push(input.value.trim()); });
-        if (this.players.length < 2) return alert("Add at least 2 players!");
-        this.mode = 'party';
-        this.initGameState();
-    },
-
-    start(mode) {
-        if (mode === 'ai') {
-            const name = document.querySelector('.party-name').value.trim() || "YOU";
-            this.players = [name, "AI"];
-            this.mode = 'ai';
-            this.initGameState();
-        }
     }
 };
 
@@ -224,6 +174,7 @@ const online = {
     peer: null, conn: null, connections: [], isHost: false, myName: "",
 
     createRoom() {
+        this.cleanup();
         this.myName = document.querySelector('.party-name').value || "Host";
         this.peer = new Peer(peerConfig);
         this.isHost = true;
@@ -241,26 +192,22 @@ const online = {
     joinRoom() {
         const id = document.getElementById('join-id').value.trim().toLowerCase();
         if (!id) return alert("Enter Room ID!");
-        this.myName = document.querySelector('.party-name').value || "Player" + Math.floor(Math.random()*99);
-        
-        if (this.peer) this.peer.destroy();
+        this.cleanup();
+        this.myName = document.querySelector('.party-name').value || "Guest";
         this.peer = new Peer(peerConfig);
-        
         this.peer.on('open', () => {
-            // Give the network 500ms to breathe before connecting
-            setTimeout(() => {
-                this.conn = this.peer.connect(id, { reliable: true });
-                this.setupConn(this.conn);
-            }, 500);
+            this.conn = this.peer.connect(id, { reliable: true });
+            this.setupConn(this.conn);
         });
-
-        this.peer.on('error', err => {
-            alert("Connection Error. Try refreshing both phones!");
+        this.peer.on('error', (err) => {
+            console.error(err);
+            alert("Join failed. Error type: " + err.type);
         });
     },
 
     setupConn(c) {
         c.on('open', () => {
+            console.log("Connection Established!");
             if (!this.isHost) this.sendData({ type: 'HELLO', name: this.myName });
         });
         c.on('data', data => {
@@ -272,14 +219,16 @@ const online = {
             if (data.type === 'LIST') { game.players = data.list; ui.updateOnlineList(); }
             if (data.type === 'START') { game.mode = 'online'; game.initGameState(); }
             if (data.type === 'MOVE') { game.processMove(data.user, data.move); }
-            if (data.type === 'SYNC') { 
-                game.players = data.list; 
-                game.turnIndex = data.index; 
-                game.updateTurnUI(); 
-                game.resetTimer(); 
-            }
+            if (data.type === 'SYNC') { game.players = data.list; game.turnIndex = data.index; game.updateTurnUI(); game.resetTimer(); }
             if (data.type === 'WINNER') { game.showVictory(data.msg); }
         });
+    },
+
+    cleanup() {
+        if (this.peer) {
+            this.peer.destroy();
+            this.peer = null;
+        }
     },
 
     sendData(d) { if (this.conn) this.conn.send(d); },
@@ -293,21 +242,26 @@ const ui = {
         document.getElementById(id).classList.add('active');
     },
     updateOnlineList() {
-        document.getElementById('party-names-container').innerHTML = `<p style="color:white">Lobby: ${game.players.join(", ")}</p>`;
+        const container = document.getElementById('party-names-container');
+        if (container) container.innerHTML = `<p style="color:white">Lobby: ${game.players.join(", ")}</p>`;
     },
     clearLog() { document.getElementById('game-feed').innerHTML = ""; },
     addLog(user, msg, color = "white") {
         const feed = document.getElementById('game-feed');
-        feed.innerHTML += `<div style="color:${color}; margin-bottom:5px;"><strong>${user}:</strong> ${msg}</div>`;
-        feed.scrollTop = feed.scrollHeight;
+        if (feed) {
+            feed.innerHTML += `<div style="color:${color}; margin-bottom:5px;"><strong>${user}:</strong> ${msg}</div>`;
+            feed.scrollTop = feed.scrollHeight;
+        }
     }
 };
 
 window.onload = () => {
     const list = document.getElementById('player-list');
-    let opts = [];
-    database.players.forEach(p => { opts.push(p.name); p.clubs.forEach(c => opts.push(c)); });
-    [...new Set(opts)].sort().forEach(o => {
-        const el = document.createElement('option'); el.value = o; list.appendChild(el);
-    });
+    if (list) {
+        let opts = [];
+        database.players.forEach(p => { opts.push(p.name); p.clubs.forEach(c => opts.push(c)); });
+        [...new Set(opts)].sort().forEach(o => {
+            const el = document.createElement('option'); el.value = o; list.appendChild(el);
+        });
+    }
 };
